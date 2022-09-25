@@ -157,9 +157,11 @@ function Dashboard(props) {
       return 'A'
   }
 
+  const showBackdrop = isLoading || isDelete || show
+
   return (
     <>
-      <Modal isOpen={show} toggle={handleClose} backdrop={true}>
+      <Modal isOpen={show} toggle={handleClose} backdrop={true} style={{ marginTop: -100 }}>
         <ModalHeader>
           Form Nilai Mahasiswa
         </ModalHeader>
@@ -287,7 +289,7 @@ function Dashboard(props) {
           />
         </ModalBody>
       </Modal>
-      {isLoading && (
+      {showBackdrop && (
         <div style={{ backgroundColor: 'rgba(0,0,0,0.5)', height: '100%', width: '100%', position: 'absolute', zIndex: 999 }}></div>
       )}
       <div className="content">
@@ -353,7 +355,6 @@ function Dashboard(props) {
                         <td>{i.uas}</td>
                         <td>{i.average}</td>
                         <td>{grade(i.average)}</td>
-                        {console.log(grade(i.average))}
                       </tr>
                     ))}
                   </tbody>
