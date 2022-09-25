@@ -15,11 +15,12 @@
 * The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
 
 */
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 // nodejs library that concatenates classes
 import classNames from "classnames";
 // react plugin used to create charts
 import { Line, Bar } from "react-chartjs-2";
+import NotificationAlert from "react-notification-alert";
 
 // reactstrap components
 import {
@@ -34,7 +35,6 @@ import {
   Table,
   Row,
   Col,
-  UncontrolledTooltip,
   Form,
   Modal,
   ModalBody,
@@ -48,21 +48,120 @@ import {
   chartExample3,
   chartExample4
 } from "variables/charts.js";
+import { _getMahasiswa } from "service/mahasiswa";
+import { _createMahasiswa } from "service/mahasiswa";
+import { _updateMahasiswa } from "service/mahasiswa";
+import { _notify } from "util/notify";
+import Lottie from "react-lottie";
+import * as animationData from '../assets/lottie/loading.json'
+import { _deleteMahasiswa } from "service/mahasiswa";
 
 function Dashboard(props) {
-  const [show, setShow] = useState(false);
-  const handleClose = () => setShow(false);
+  const notificationAlertRef = React.useRef(null);
+  const [show, setShow] = useState(false)
+  const [isDelete, setIsDelete] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
+  const [dataGrid, setDataGrid] = useState(undefined)
+  const defaultDataItem = { id: undefined, nama_mahasiswa: '', quiz: 0, uas: 0, praktek: 0, absensi: 0, tugas: 0 }
+  const [dataItem, setDataItem] = useState(defaultDataItem)
   const handleShow = () => setShow(true);
+  const handleClose = () => {
+    setShow(false)
+    setDataItem(defaultDataItem)
+    setIsLoading(true)
+  }
+
+  const defaultOptions = {
+    loop: true,
+    autoplay: true,
+    animationData: animationData,
+    rendererSettings: {
+      preserveAspectRatio: 'xMidYMid slice'
+    }
+  };
 
   const [bigChartData, setbigChartData] = React.useState("data1");
   const setBgChartData = (name) => {
     setbigChartData(name);
   };
 
+  useEffect(() => {
+    if (isLoading === true) {
+      getDataGrid()
+    }
+  });
+
+  useEffect(() => {
+    if (isLoading === true) {
+      getDataGrid()
+    }
+  }, [isLoading]);
+
+  const getDataGrid = async () => {
+    const response = await _getMahasiswa()
+    if (response.status === 200) {
+      setDataGrid(response.data.data)
+      setIsLoading(false)
+      console.log('Success Get Data')
+    }
+  }
+
+  const onClickEdit = (dataItem) => {
+    setDataItem(dataItem)
+    handleShow()
+  }
+
+  const onClickDelete = (dataItem) => {
+    setDataItem(dataItem)
+    setIsDelete(true)
+  }
+
+  const onChangeInput = (field, value) => {
+    const newDataItem = {
+      ...dataItem,
+      [field]: value
+    }
+    setDataItem(newDataItem)
+  }
+
+  const onSubmit = async () => {
+    setIsLoading(true)
+    let res
+    if (dataItem.id === undefined) {
+      res = await _createMahasiswa(dataItem)
+    } else {
+      res = await _updateMahasiswa(dataItem)
+    }
+    let options
+    if (res.status === 201 || res.status === 200) {
+      options = _notify('Success Upload', dataItem.nama_mahasiswa, 'success')
+    } else {
+      options = _notify('Error', '', 'danger')
+    }
+    handleClose()
+    setDataItem(defaultDataItem)
+    notificationAlertRef.current.notificationAlert(options)
+  }
+
+  const onSubmitDelete = async () => {
+    setIsLoading(true)
+    const res = await _deleteMahasiswa(dataItem)
+    let options
+    if (res.status === 201 || res.status === 200 || res.status === 204) {
+      options = _notify('Success Delete', dataItem.nama_mahasiswa, 'success')
+    } else {
+      options = _notify('Error', '', 'danger')
+    }
+    setDataItem(defaultDataItem)
+    setIsDelete(false)
+    setIsLoading(false)
+    notificationAlertRef.current.notificationAlert(options)
+  }
+
   return (
     <>
       <Modal isOpen={show} toggle={handleClose} backdrop={true}>
-        <ModalHeader toggle={show} close={handleClose}>
+        <ModalHeader>
           Form Nilai Mahasiswa
         </ModalHeader>
         <ModalBody>
@@ -74,7 +173,8 @@ function Dashboard(props) {
                   <Input
                     defaultValue=""
                     type="text"
-                    value={''}
+                    value={dataItem.nama_mahasiswa}
+                    onChange={(i) => onChangeInput('nama_mahasiswa', i.target.value)}
                   />
                 </FormGroup>
               </Col>
@@ -86,6 +186,8 @@ function Dashboard(props) {
                   <Input
                     defaultValue={0}
                     type="number"
+                    value={dataItem.quiz}
+                    onChange={(i) => onChangeInput('quiz', i.target.value)}
                   />
                 </FormGroup>
               </Col>
@@ -95,6 +197,8 @@ function Dashboard(props) {
                   <Input
                     defaultValue={0}
                     type="number"
+                    value={dataItem.tugas}
+                    onChange={(i) => onChangeInput('tugas', i.target.value)}
                   />
                 </FormGroup>
               </Col>
@@ -106,22 +210,31 @@ function Dashboard(props) {
                   <Input
                     defaultValue={0}
                     type="number"
+                    value={dataItem.absensi}
+                    onChange={(i) => onChangeInput('absensi', i.target.value)}
                   />
                 </FormGroup>
               </Col>
               <Col className="px-md-1" md="4">
                 <FormGroup>
-                  <label>Nilai Prakter</label>
+                  <label>Nilai Praktek</label>
                   <Input
                     defaultValue={0}
                     type="number"
+                    value={dataItem.praktek}
+                    onChange={(i) => onChangeInput('praktek', i.target.value)}
                   />
                 </FormGroup>
               </Col>
               <Col className="pl-md-1" md="4">
                 <FormGroup>
                   <label>Nilai UAS</label>
-                  <Input defaultValue={0} type="number" />
+                  <Input
+                    defaultValue={0}
+                    type="number"
+                    value={dataItem.uas}
+                    onChange={(i) => onChangeInput('uas', i.target.value)}
+                  />
                 </FormGroup>
               </Col>
             </Row>
@@ -129,16 +242,59 @@ function Dashboard(props) {
         </ModalBody>
         <ModalFooter>
           <Col style={{ marginBottom: 20, textAlign: 'end' }}>
-            <Button style={{ marginRight: 10 }} color="neutral" type="submit" onClick={() => handleClose()}>
+            <Button
+              style={{ marginRight: 10 }}
+              color="neutral" type="submit"
+              onClick={() => handleClose()}>
               Close
             </Button>
-            <Button color="primary" type="submit">
+            <Button
+              color="primary"
+              type="submit"
+              onClick={() => onSubmit()}>
               Save
             </Button>
           </Col>
         </ModalFooter>
       </Modal>
+      <Modal isOpen={isDelete} toggle={() => setIsDelete(false)} backdrop={true}>
+        <ModalBody>
+          Are you sure delete {dataItem.nama_mahasiswa}?
+        </ModalBody>
+        <ModalFooter>
+          <Col style={{ marginBottom: 20, textAlign: 'end' }}>
+            <Button
+              style={{ marginRight: 10 }}
+              color="neutral" type="submit"
+              onClick={() => onSubmitDelete()}>
+              Delete
+            </Button>
+            <Button
+              color="danger"
+              type="submit"
+              onClick={() => setIsDelete(false)}>
+              Cancel
+            </Button>
+          </Col>
+        </ModalFooter>
+      </Modal>
+      <Modal isOpen={isLoading} backdrop='static' backdropClassName="modal-backdrop">
+        <ModalBody>
+          <Lottie
+            options={defaultOptions}
+            height={400}
+            width={400}
+            isStopped={!isLoading}
+          />
+        </ModalBody>
+      </Modal>
+      {isLoading && (
+        <div style={{ backgroundColor: 'rgba(0,0,0,0.5)', height: '100%', width: '100%', position: 'absolute', zIndex: 999 }}></div>
+      )}
       <div className="content">
+        <div className="react-notification-alert-container">
+          <NotificationAlert ref={notificationAlertRef} />
+        </div>
         <Row>
           <Col>
             <Card style={{ height: 500 }}>
@@ -148,13 +304,13 @@ function Dashboard(props) {
                     <CardTitle tag="h4">Mahasiswa</CardTitle>
                   </Col>
                   <Col style={{ textAlign: 'end' }}>
-                    <Button variant="primary" onClick={handleShow}>
+                    <Button color="primary" onClick={handleShow}>
                       Add New
                     </Button>
                   </Col>
                 </Row>
               </CardHeader>
-              <CardBody>
+              <CardBody style={{ overflow: 'scroll' }}>
                 <Table className="tablesorter" responsive>
                   <thead className="text-primary">
                     <tr>
@@ -165,89 +321,39 @@ function Dashboard(props) {
                       <th>Tugas</th>
                       <th>Praktek</th>
                       <th>UAS</th>
+                      <th>Rata-rata</th>
                     </tr>
                   </thead>
                   <tbody>
-                    <tr>
-                      <td>
-                        <Button
-                          color="link"
-                          id="tooltip636901683"
-                          title=""
-                          type="button"
-                        >
-                          <i className="tim-icons icon-pencil" />
-                        </Button>
-                        <UncontrolledTooltip
-                          delay={0}
-                          target="tooltip636901683"
-                          placement="right"
-                        >
-                          Edit Task
-                        </UncontrolledTooltip>
-                        <Button
-                          color="link"
-                          id="tooltip636901683x"
-                          title=""
-                          type="button"
-                        >
-                          <i className="tim-icons icon-trash-simple" />
-                        </Button>
-                        <UncontrolledTooltip
-                          delay={0}
-                          target="tooltip636901683x"
-                          placement="right"
-                        >
-                          Delete Task
-                        </UncontrolledTooltip>
-                      </td>
-                      <td>Naufal Retyan</td>
-                      <td>{Math.floor(Math.random() * 10) + 1}</td>
-                      <td>{Math.floor(Math.random() * 10) + 1}</td>
-                      <td>{Math.floor(Math.random() * 10) + 1}</td>
-                      <td>{Math.floor(Math.random() * 10) + 1}</td>
-                      <td>{Math.floor(Math.random() * 10) + 1}</td>
-                    </tr>
-                    <tr>
-                      <td>
-                        <Button
-                          color="link"
-                          id="tooltip636901683"
-                          title=""
-                          type="button"
-                        >
-                          <i className="tim-icons icon-pencil" />
-                        </Button>
-                        <UncontrolledTooltip
-                          delay={0}
-                          target="tooltip636901683"
-                          placement="right"
-                        >
-                          Edit Task
-                        </UncontrolledTooltip>
-                        <Button
-                          color="link"
-                          id="tooltip636901683x"
-                          title=""
-                          type="button"
-                        >
-                          <i className="tim-icons icon-trash-simple" />
-                        </Button>
-                        <UncontrolledTooltip
-                          delay={0}
-                          target="tooltip636901683x"
-                          placement="right"
-                        >
-                          Delete Task
-                        </UncontrolledTooltip>
-                      </td>
-                      <td>Aji</td>
-                      <td>{Math.floor(Math.random() * 10) + 1}</td>
-                      <td>{Math.floor(Math.random() * 10) + 1}</td>
-                      <td>{Math.floor(Math.random() * 10) + 1}</td>
-                      <td>{Math.floor(Math.random() * 10) + 1}</td>
-                      <td>{Math.floor(Math.random() * 10) + 1}</td>
-                    </tr>
+                    {dataGrid && dataGrid.sort(({ id: a }, { id: b }) => b - a).map(i => (
+                      <tr key={i.id}>
+                        <td>
+                          <Button
+                            color="link"
+                            title=""
+                            type="button"
+                            onClick={() => onClickEdit(i)}
+                          >
+                            <i className="tim-icons icon-pencil" />
+                          </Button>
+                          <Button
+                            color="link"
+                            title=""
+                            type="button"
+                            onClick={() => onClickDelete(i)}
+                          >
+                            <i className="tim-icons icon-trash-simple" />
+                          </Button>
+                        </td>
+                        <td>{i.nama_mahasiswa}</td>
+                        <td>{i.quiz}</td>
+                        <td>{i.absensi}</td>
+                        <td>{i.tugas}</td>
+                        <td>{i.praktek}</td>
+                        <td>{i.uas}</td>
+                        <td>{(i.uas + i.praktek + i.tugas + i.absensi + i.quiz)/5}</td>
+                      </tr>
+                    ))}
                   </tbody>
                 </Table>
               </CardBody>

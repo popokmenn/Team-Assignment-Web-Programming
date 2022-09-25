@@ -4516,10 +4516,14 @@ a.close.disabled {
   pointer-events: none; }
 
 .modal-open {
-  overflow: hidden; }
+  overflow: hidden; 
+  background-color: #2891f8;
+}
   .modal-open .modal {
     overflow-x: hidden;
-    overflow-y: auto; }
+    overflow-y: auto; 
+    background-color: #2891f8;
+  }
 
 .modal {
   position: fixed;
