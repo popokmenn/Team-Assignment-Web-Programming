@@ -132,7 +132,6 @@ function Dashboard(props) {
   }
 
   const onSubmitDelete = async () => {
-    setIsLoading(true)
     const res = await _deleteMahasiswa(dataItem)
     let options
     if (res.status === 201 || res.status === 200 || res.status === 204) {
@@ -142,8 +141,8 @@ function Dashboard(props) {
     }
     setDataItem(defaultDataItem)
     setIsDelete(false)
-    setIsLoading(false)
     notificationAlertRef.current.notificationAlert(options)
+    setIsLoading(true)
   }
 
   const grade = (avg) => {
