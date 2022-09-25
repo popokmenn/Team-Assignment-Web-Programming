@@ -15,7 +15,7 @@
 * The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
 
 */
-import React from "react";
+import React, { useState } from "react";
 // nodejs library that concatenates classes
 import classNames from "classnames";
 // react plugin used to create charts
@@ -29,11 +29,6 @@ import {
   CardHeader,
   CardBody,
   CardTitle,
-  DropdownToggle,
-  DropdownMenu,
-  DropdownItem,
-  UncontrolledDropdown,
-  Label,
   FormGroup,
   Input,
   Table,
@@ -41,9 +36,11 @@ import {
   Col,
   UncontrolledTooltip,
   Form,
-  CardFooter
+  Modal,
+  ModalBody,
+  ModalFooter,
+  ModalHeader
 } from "reactstrap";
-
 // core components
 import {
   chartExample1,
@@ -53,93 +50,109 @@ import {
 } from "variables/charts.js";
 
 function Dashboard(props) {
+  const [show, setShow] = useState(false);
+  const handleClose = () => setShow(false);
+  const handleShow = () => setShow(true);
+
   const [bigChartData, setbigChartData] = React.useState("data1");
   const setBgChartData = (name) => {
     setbigChartData(name);
   };
+
   return (
     <>
-      <div className="content">
-
-        <Row>
-          <Col lg="6" md="12">
-            <Card className="card-tasks" style={{ height: 500 }}>
-              <CardHeader>
-                <h6 className="title d-inline">Form Nilai Mahasiswa</h6>
-              </CardHeader>
-              <CardBody>
-                <Form>
-                  <Row>
-                    <Col md="12">
-                      <FormGroup>
-                        <label>Nama Mahasiswa</label>
-                        <Input
-                          defaultValue=""
-                          type="text"
-                          value={''}
-                        />
-                      </FormGroup>
-                    </Col>
-                  </Row>
-                  <Row>
-                    <Col md="6">
-                      <FormGroup>
-                        <label>Nilai Quiz</label>
-                        <Input
-                          defaultValue={0}
-                          type="number"
-                        />
-                      </FormGroup>
-                    </Col>
-                    <Col md="6">
-                      <FormGroup>
-                        <label>Nilai Tugas</label>
-                        <Input
-                          defaultValue={0}
-                          type="number"
-                        />
-                      </FormGroup>
-                    </Col>
-                  </Row>
-                  <Row>
-                    <Col className="pr-md-1" md="4">
-                      <FormGroup>
-                        <label>Nilai Absensi</label>
-                        <Input
-                          defaultValue={0}
-                          type="number"
-                        />
-                      </FormGroup>
-                    </Col>
-                    <Col className="px-md-1" md="4">
-                      <FormGroup>
-                        <label>Nilai Prakter</label>
-                        <Input
-                          defaultValue={0}
-                          type="number"
-                        />
-                      </FormGroup>
-                    </Col>
-                    <Col className="pl-md-1" md="4">
-                      <FormGroup>
-                        <label>Nilai UAS</label>
-                        <Input defaultValue={0} type="number" />
-                      </FormGroup>
-                    </Col>
-                  </Row>
-                </Form>
-              </CardBody>
-              <CardFooter>
-                <Button className="btn-fill" color="primary" type="submit">
-                  Save
-                </Button>
-              </CardFooter>
-            </Card>
+      <Modal isOpen={show} toggle={handleClose} backdrop={true}>
+        <ModalHeader toggle={show} close={handleClose}>
+          Form Nilai Mahasiswa
+        </ModalHeader>
+        <ModalBody>
+          <Form>
+            <Row>
+              <Col md="12">
+                <FormGroup>
+                  <label>Nama Mahasiswa</label>
+                  <Input
+                    defaultValue=""
+                    type="text"
+                    value={''}
+                  />
+                </FormGroup>
+              </Col>
+            </Row>
+            <Row>
+              <Col md="6">
+                <FormGroup>
+                  <label>Nilai Quiz</label>
+                  <Input
+                    defaultValue={0}
+                    type="number"
+                  />
+                </FormGroup>
+              </Col>
+              <Col md="6">
+                <FormGroup>
+                  <label>Nilai Tugas</label>
+                  <Input
+                    defaultValue={0}
+                    type="number"
+                  />
+                </FormGroup>
+              </Col>
+            </Row>
+            <Row>
+              <Col className="pr-md-1" md="4">
+                <FormGroup>
+                  <label>Nilai Absensi</label>
+                  <Input
+                    defaultValue={0}
+                    type="number"
+                  />
+                </FormGroup>
+              </Col>
+              <Col className="px-md-1" md="4">
+                <FormGroup>
+                  <label>Nilai Prakter</label>
+                  <Input
+                    defaultValue={0}
+                    type="number"
+                  />
+                </FormGroup>
+              </Col>
+              <Col className="pl-md-1" md="4">
+                <FormGroup>
+                  <label>Nilai UAS</label>
+                  <Input defaultValue={0} type="number" />
+                </FormGroup>
+              </Col>
+            </Row>
+          </Form>
+        </ModalBody>
+        <ModalFooter>
+          <Col style={{ marginBottom: 20, textAlign: 'end' }}>
+            <Button style={{ marginRight: 10 }} color="neutral" type="submit" onClick={() => handleClose()}>
+              Close
+            </Button>
+            <Button color="primary" type="submit">
+              Save
+            </Button>
           </Col>
-          <Col lg="6" md="12" >
+        </ModalFooter>
+      </Modal>
+      <div className="content">
+        <Row>
+          <Col>
             <Card style={{ height: 500 }}>
               <CardHeader>
-                <CardTitle tag="h4">Mahasiswa</CardTitle>
+                <Row>
+                  <Col>
+                    <CardTitle tag="h4">Mahasiswa</CardTitle>
+                  </Col>
+                  <Col style={{ textAlign: 'end' }}>
+                    <Button variant="primary" onClick={handleShow}>
+                      Add New
+                    </Button>
+                  </Col>
+                </Row>
               </CardHeader>
               <CardBody>
                 <Table className="tablesorter" responsive>
