@@ -146,6 +146,17 @@ function Dashboard(props) {
     notificationAlertRef.current.notificationAlert(options)
   }
 
+  const grade = (avg) => {
+    if (avg <= 65)
+      return 'D'
+    else if (avg <= 75)
+      return 'C'
+    else if (avg <= 85)
+      return 'B'
+    else if (avg <= 100)
+      return 'A'
+  }
+
   return (
     <>
       <Modal isOpen={show} toggle={handleClose} backdrop={true}>
@@ -310,6 +321,7 @@ function Dashboard(props) {
                       <th>Praktek</th>
                       <th>UAS</th>
                       <th>Rata-rata</th>
+                      <th>Grade</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -340,6 +352,8 @@ function Dashboard(props) {
                         <td>{i.praktek}</td>
                         <td>{i.uas}</td>
                         <td>{i.average}</td>
+                        <td>{grade(i.average)}</td>
+                        {console.log(grade(i.average))}
                       </tr>
                     ))}
                   </tbody>
